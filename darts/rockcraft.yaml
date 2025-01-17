@@ -1,0 +1,62 @@
+name: katib-darts-rock
+title: Katib Darts Rock
+summary: A Katib Dart Rock
+description: |
+  Darts Suggestion Service.
+  For more information, please visit: https://github.com/kubeflow/katib
+version: "beta"
+base: ubuntu:22.04
+license: Apache-2.0
+platforms:
+  amd64:
+    build-on: ["amd64"]
+    # TODO: Official also supports `ppc64le` architecture, currently we only support `amd64`.
+    # For more information, please check: https://github.com/kubeflow/katib/blob/master/cmd/suggestion/nas/darts/v1beta1/Dockerfile
+
+services:
+  katlib-darts:
+    override: replace
+    command: python main.py
+    startup: enabled
+    environment:
+      # TODO: Probably these envs are not being used and can be removed.
+      PYTHONPATH: /opt/katib:/opt/katib/pkg/apis/manager/v1beta1/python:/opt/katib/pkg/apis/manager/health/python
+      TARGET_DIR: /opt/katib
+      SUGGESTION_DIR: cmd/suggestion/nas/darts/v1beta1
+
+parts:
+  pkg:
+    plugin: dump
+    source: https://github.com/kubeflow/katib.git
+    source-type: git
+    source-subdir: pkg
+    organize:
+      "*": opt/katib/pkg/
+    stage:
+      - -opt/katib/pkg/
+
+  dart-pyton-packages:
+    plugin: python
+    source: https://github.com/kubeflow/katib.git
+    source-subdir: cmd/suggestion/nas/darts/v1beta1
+    python-requirements: ["requirements.txt"]
+
+  grpc-health-probe:
+    plugin: dump
+    source: https://github.com/grpc-ecosystem/grpc-health-probe/releases/download/v0.4.15/grpc_health_probe-linux-amd64
+    source-type: file
+    organize:
+      grpc_health_probe-linux-amd64: bin/grpc_health_probe
+    stage:
+      - bin/grpc_health_probe
+
+  entrypoint:
+    plugin: dump
+    source: https://github.com/kubeflow/katib.git
+    source-subdir: cmd/earlystopping/medianstop/v1beta1
+    source-type: git
+    source-tag: master
+    organize:
+      main.py: usr/bin/main.py
+    stage:
+      - usr/bin/main.py
