@@ -15,7 +15,7 @@ services:
     command: "python3 main.py"
     working-dir: /opt/katib/cmd/suggestion/nas/enas/v1beta1/
     environment:
-      PYTHONPATH: "/usr/local/lib/python3.10/dist-packages/:/opt/katib:/opt/katib/pkg/apis/manager/v1beta1/python:/opt/katib/pkg/apis/manager/health/python"
+      PYTHONPATH: "/usr/local/lib/python3.11/dist-packages/:/opt/katib:/opt/katib/pkg/apis/manager/v1beta1/python:/opt/katib/pkg/apis/manager/health/python"
 platforms:
     amd64:
 
@@ -29,15 +29,22 @@ parts:
       source-type: git
       source-subdir: cmd/suggestion/nas/enas/v1beta1
       build-packages:
-        - python3-pip
-        - python3.10
-        - python3.10-venv
-        - python3-dev
+        - python3.11
+        - python3.11-venv
       stage-packages:
-        - python3.10
-        - python3.10-venv
+        - python3.11
+        - python3.11-venv
       python-requirements:
         - requirements.txt
+      build-environment:
+        # The Python version must match the one used in upstream
+        # https://github.com/kubeflow/katib/blob/v0.18.0-rc.0/cmd/suggestion/nas/enas/v1beta1/Dockerfile#L1
+        - PARTS_PYTHON_INTERPRETER: "python3.11"
+      override-build: |
+        craftctl default
+        # Ensure Python 3.11 is the default version
+        mkdir -p ${CRAFT_PART_INSTALL}/usr/bin/
+        ln -fs /usr/bin/python3.11 ${CRAFT_PART_INSTALL}/usr/bin/python3
 
     suggestion-enas:
       plugin: dump
