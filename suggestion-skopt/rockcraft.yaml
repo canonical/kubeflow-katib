@@ -1,7 +1,7 @@
-# Based on https://github.com/kubeflow/katib/blob/v0.17.0/cmd/suggestion/skopt/v1beta1/Dockerfile
+# Based on https://github.com/kubeflow/katib/blob/v0.18.0-rc.0/cmd/suggestion/skopt/v1beta1/Dockerfile
 name: suggestion-skopt
 base: ubuntu@22.04
-version: 'v0.17.0'
+version: 'v0.18.0-rc.0'
 summary: "Katib Suggestion skopt"
 description: |
       Katib Suggestion skopt. Scikit-Optimize, or skopt, is a simple and efficient library to minimize expensive and noisy black-box functions. It implements several methods for sequential model-based optimization.
@@ -15,7 +15,7 @@ services:
     command: "python3 main.py"
     working-dir: /opt/katib/cmd/suggestion/skopt/v1beta1/
     environment:
-      PYTHONPATH: "/usr/local/lib/python3.10/dist-packages/:/opt/katib:/opt/katib/pkg/apis/manager/v1beta1/python:/opt/katib/pkg/apis/manager/health/python"
+      PYTHONPATH: "/usr/local/lib/python3.11/dist-packages/:/opt/katib:/opt/katib/pkg/apis/manager/v1beta1/python:/opt/katib/pkg/apis/manager/health/python"
 platforms:
     amd64:
 
@@ -24,26 +24,31 @@ parts:
     requirements-and-deps:
       plugin: python
       source: https://github.com/kubeflow/katib.git
-      source-tag: "v0.17.0"
+      source-tag: "v0.18.0-rc.0"
       source-depth: 1
       source-type: git
       source-subdir: cmd/suggestion/skopt/v1beta1
       build-packages:
-        - python3-pip
-        - python3.10
-        - python3.10-venv
-        - python3-dev
+        - python3.11
+        - python3.11-venv
       stage-packages:
-        - python3.10
-        - python3.10-venv
+        - python3.11
+        - python3.11-venv
       python-requirements:
         - requirements.txt
+      build-environment:
+        - PARTS_PYTHON_INTERPRETER: "python3.11"
+      override-build: |
+        craftctl default
+        # Ensure Python 3.11 is the default version
+        mkdir -p ${CRAFT_PART_INSTALL}/usr/bin/
+        ln -fs /usr/bin/python3.11 ${CRAFT_PART_INSTALL}/usr/bin/python3
 
     # install required contents
     suggestion-skopt:
       plugin: dump
       source: https://github.com/kubeflow/katib.git
-      source-tag: "v0.17.0"
+      source-tag: "v0.18.0-rc.0"
       source-depth: 1
       source-type: git
       organize:
